@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-05-23
+
 ### Added
 
 - CLI binary `rusty-vipe`: pop `$EDITOR` mid-pipe with cross-platform TTY reattachment (Rust port of moreutils `vipe`).
@@ -49,4 +51,5 @@ Upward deviation from the Rusty portfolio's "current stable minus two" rule, for
 
 A full Compatibility Matrix lives at [`docs/COMPATIBILITY.md`](docs/COMPATIBILITY.md).
 
-[Unreleased]: https://github.com/jsh562/rusty-vipe/compare/v0.0.0...HEAD
+[Unreleased]: https://github.com/jsh562/rusty-vipe/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/jsh562/rusty-vipe/releases/tag/v0.1.0
