@@ -96,8 +96,8 @@ fn bench_tempfile_setup(c: &mut Criterion) {
     group.bench_function("small-19-bytes", |b| {
         b.iter(|| {
             let reader = Cursor::new(&small_payload);
-            let tf = rusty_vipe::pipeline::drain_to_tempfile(reader, ".txt")
-                .expect("drain succeeds");
+            let tf =
+                rusty_vipe::pipeline::drain_to_tempfile(reader, ".txt").expect("drain succeeds");
             // Drop runs the cleanup path — include it in the timing so the
             // bench reflects per-invocation cost end-to-end.
             drop(tf);
@@ -110,8 +110,8 @@ fn bench_tempfile_setup(c: &mut Criterion) {
     group.bench_function("64-kib", |b| {
         b.iter(|| {
             let reader = Cursor::new(&medium_payload);
-            let tf = rusty_vipe::pipeline::drain_to_tempfile(reader, ".txt")
-                .expect("drain succeeds");
+            let tf =
+                rusty_vipe::pipeline::drain_to_tempfile(reader, ".txt").expect("drain succeeds");
             drop(tf);
         })
     });
