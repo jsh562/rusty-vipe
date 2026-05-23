@@ -12,6 +12,11 @@ env:
   CARGO_TERM_COLOR: always
   RUST_BACKTRACE: 1
 
+# Default permissions: read-only for the build/publish jobs. The
+# `github-release` job overrides this with `contents: write` to upload assets.
+permissions:
+  contents: read
+
 jobs:
   verify-tag-matches-cargo-version:
     runs-on: ubuntu-latest

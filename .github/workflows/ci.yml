@@ -24,6 +24,12 @@ env:
   # be inherited by every job that runs `cargo test`.
   LC_ALL: C.UTF-8
 
+# Minimum permissions for the default GITHUB_TOKEN. `contents: read` is what
+# `actions/checkout` needs to fetch the repo; declaring it explicitly avoids
+# auth failures under restrictive org/repo workflow-permission defaults.
+permissions:
+  contents: read
+
 jobs:
   fmt:
     name: rustfmt
