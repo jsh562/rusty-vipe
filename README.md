@@ -4,6 +4,10 @@ A Rust port of the moreutils `vipe` utility: pop `$EDITOR` mid-pipe so you can e
 
 Part of the [Rusty portfolio](https://jsh562.github.io/rusty-portfolio) — a collection of small Rust ports of utilities missing from the Rust ecosystem.
 
+[![crates.io](https://img.shields.io/crates/v/rusty-vipe.svg)](https://crates.io/crates/rusty-vipe)
+[![docs.rs](https://docs.rs/rusty-vipe/badge.svg)](https://docs.rs/rusty-vipe)
+[![license: MIT OR Apache-2.0](https://img.shields.io/crates/l/rusty-vipe.svg)](#license)
+
 ## Install
 
 ### With a Rust toolchain
