@@ -1,0 +1,12 @@
+# Fixtures (if any are added later) stored verbatim — no line-ending conversion.
+fixtures/inputs/** binary
+fixtures/moreutils_outputs/** binary
+
+# Bash scripts use LF endings everywhere.
+*.sh text eol=lf
+
+# PowerShell scripts use CRLF for native Windows tooling.
+*.ps1 text eol=crlf
+
+# Generated completion scripts need stable line endings for drift tests.
+completions/** -text

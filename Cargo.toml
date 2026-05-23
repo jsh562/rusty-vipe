@@ -1,0 +1,116 @@
+[package]
+name = "rusty-vipe"
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.85"
+authors = ["James Han <jsh562@users.noreply.github.com>"]
+license = "MIT OR Apache-2.0"
+description = "Pop $EDITOR mid-pipe, edit the buffered bytes interactively, resume the pipeline with the edited output — a Rust port of moreutils `vipe` with strict-compat mode, cross-platform TTY reattachment (/dev/tty or CONIN$/CONOUT$), and a typed library API."
+repository = "https://github.com/jsh562/rusty-vipe"
+homepage = "https://github.com/jsh562/rusty-vipe"
+documentation = "https://docs.rs/rusty-vipe"
+readme = "README.md"
+keywords = ["vipe", "moreutils", "editor", "pipe", "cli"]
+categories = ["command-line-utilities", "text-editors"]
+
+[features]
+default = ["cli"]
+# `cli` gates the CLI-only dependencies (clap, clap_complete, anyhow, signal-hook)
+# so library consumers can depend on rusty-vipe with `default-features = false`
+# without pulling in the binary's argument-parsing surface.
+cli = ["dep:clap", "dep:clap_complete", "dep:anyhow", "dep:signal-hook"]
+# `vipe-alias` adds a second binary entry named `vipe` alongside `rusty-vipe`.
+# Both binaries share the same source — they differ only in installed name.
+# argv[0] auto-detect (FR-019) routes `vipe` invocations into Strict mode.
+vipe-alias = ["cli"]
+# `bench` enables criterion benches in `benches/`. Off by default to keep
+# `cargo install` minimal.
+bench = ["dep:criterion"]
+# `dev-helpers` gates the `fake-editor` `[[bin]]` used by integration tests.
+# NOT enabled by `cargo install rusty-vipe`, so the fake-editor helper never
+# ships to end users. Enable with `cargo test --features dev-helpers` (CI does
+# this automatically).
+dev-helpers = []
+
+[dependencies]
+tempfile = "3"
+thiserror = "2"
+shell-words = "1"
+# CLI-only deps gated behind the `cli` feature.
+clap = { version = "4", features = ["derive", "env"], optional = true }
+clap_complete = { version = "4", optional = true }
+anyhow = { version = "1", optional = true }
+# Unix signal handler — declared as optional at top level so the `cli` feature
+# can reference it via `dep:signal-hook`. Source code gates usage with #[cfg(unix)].
+signal-hook = { version = "0.3", optional = true }
+# Bench-only dep gated behind the `bench` feature.
+criterion = { version = "0.5", optional = true }
+
+[target.'cfg(unix)'.dependencies]
+# Used by tty.rs::preserve_stdout for dup(2) via std::os::fd::OwnedFd round-trip.
+# Always required on Unix when the library is built (NOT gated behind `cli`)
+# so that library consumers can still call preserve_stdout via the public API.
+libc = "0.2"
+
+[target.'cfg(windows)'.dependencies]
+# Windows console-control handler + CONIN$/CONOUT$ via CreateFileW for TTY
+# reattachment (AD-004); always required on Windows when the library is built.
+# DuplicateHandle from Win32_System_Threading; CreateFileW + share modes from
+# Win32_Storage_FileSystem; SetConsoleCtrlHandler from Win32_System_Console.
+windows-sys = { version = "0.59", features = [
+    "Win32_Foundation",
+    "Win32_Storage_FileSystem",
+    "Win32_System_Console",
+    "Win32_System_Threading",
+    "Win32_Security",
+] }
+
+[dev-dependencies]
+insta = { version = "1", features = ["yaml"] }
+assert_cmd = "2"
+predicates = "3"
+tempfile = "3"
+static_assertions = "1"
+
+# Linux-only dev dep for the signal-injection / no-TTY fault-injection tests in
+# `tests/signal_cleanup.rs` and `tests/no_tty.rs`. Tests are `#[ignore]`'d at
+# v0.1.0 — opt-in via `cargo test --features dev-helpers -- --ignored`.
+[target.'cfg(target_os = "linux")'.dev-dependencies]
+libc = "0.2"
+
+[[bin]]
+name = "rusty-vipe"
+path = "src/main.rs"
+required-features = ["cli"]
+
+[[bin]]
+name = "vipe"
+path = "src/bin/vipe.rs"
+required-features = ["vipe-alias"]
+
+[[bin]]
+name = "fake-editor"
+path = "tests/bin/fake_editor.rs"
+required-features = ["dev-helpers"]
+# Don't ship to end users.
+test = false
+doctest = false
+bench = false
+
+[[bench]]
+name = "throughput"
+harness = false
+required-features = ["bench"]
+
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/{ name }-v{ version }-{ target }{ archive-suffix }"
+bin-dir = "{ name }-v{ version }-{ target }/{ bin }{ binary-ext }"
+pkg-fmt = "tgz"
+
+[package.metadata.binstall.overrides.x86_64-pc-windows-msvc]
+pkg-fmt = "zip"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
