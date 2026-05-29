@@ -1,6 +1,6 @@
 [package]
 name = "rusty-vipe"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.85"
 authors = ["James Han <jsh562@users.noreply.github.com>"]
@@ -13,23 +13,90 @@ readme = "README.md"
 keywords = ["vipe", "moreutils", "editor", "pipe", "cli"]
 categories = ["command-line-utilities", "text-editors"]
 
+# -----------------------------------------------------------------------------
+# [features] — v0.2.0 portfolio-wide Cargo Features Convention layout.
+#
+# Convention authority:
+#   * specs/adrs/0006-cargo-features-convention-for-portfolio-ports.md (why)
+#   * project-instructions.md §Cargo Feature Surface (what)
+#
+# rusty-vipe is a single-capability port per spec 00011 §Scope Edge Cases:
+# the documented capability is "pop $EDITOR mid-pipe and resume the pipeline
+# with the edited output". Per the minimum-convention rule, ZERO new leaves
+# are carved beyond the required umbrellas. See docs/feature-layout.md for
+# the explicit carving rationale.
+#
+# v0.2.0 is a PURELY ADDITIVE release. Every v0.1.x feature name and
+# composition is preserved verbatim; the new umbrellas (`full`,
+# `vipe-classic`, `vipe-minimal`) layer on top without renaming or
+# narrowing existing features. No SemVer break.
+#
+# Required umbrellas (FR-001..FR-004):
+#   default          — alias for `full`; kitchen-sink for casual `cargo install`
+#   full             — every leaf (degenerates to `cli` in this single-cap port)
+#   cli              — CLI-only deps + modules (library consumers strip)
+#   vipe-classic     — bare port, drop-in match for upstream moreutils `vipe`
+#
+# Required preset bundles (FR-007 — 2 per port even for single-cap):
+#   vipe-classic     — moreutils vipe drop-in replacement (aliased above)
+#   vipe-minimal     — explicit minimal-CLI alias (same composition)
+#
+# Retained v0.1.x features (additive — names + compositions preserved verbatim):
+#   cli              — unchanged: clap + clap_complete + anyhow + signal-hook
+#   vipe-alias       — unchanged: adds a second `vipe` binary entry
+#   bench            — unchanged: criterion benches (dev-tooling, allowlist)
+#   dev-helpers      — unchanged: gates the `fake-editor` test bin
+#
+# No leaf features carved — see docs/feature-layout.md §Leaves intentionally
+# NOT carved for the explicit per-capability rejection rationale.
+# -----------------------------------------------------------------------------
+
 [features]
-default = ["cli"]
+default = ["full"]
+
+# Umbrella: every leaf enabled. Kitchen sink for `cargo install` casual users.
+# In rusty-vipe (single-capability port) `full` resolves to `cli` alone —
+# preserving identical resolution to the v0.1.x `default = ["cli"]` so no
+# observable change for any consumer.
+full = ["cli"]
+
 # `cli` gates the CLI-only dependencies (clap, clap_complete, anyhow, signal-hook)
 # so library consumers can depend on rusty-vipe with `default-features = false`
-# without pulling in the binary's argument-parsing surface.
+# without pulling in the binary's argument-parsing surface. Composition preserved
+# verbatim from v0.1.x.
 cli = ["dep:clap", "dep:clap_complete", "dep:anyhow", "dep:signal-hook"]
+
+# Umbrella: bare port, drop-in match for upstream moreutils `vipe`. Pulls
+# the CLI surface; the bare moreutils `vipe` set is reproduced via
+# `--strict`, `RUSTY_VIPE_STRICT` env var, or `vipe-alias` argv[0]
+# auto-detect (no extra feature flag required).
+vipe-classic = ["cli"]
+
+# Preset bundle: explicit minimal-CLI alias. Same composition as
+# vipe-classic (single-capability port has no smaller subset to carve).
+# Provided as a semantic alias mirroring the `<port>-minimal` naming
+# convention used by other portfolio ports (figlet-minimal, ts-minimal,
+# pwgen-minimal, sponge-minimal).
+vipe-minimal = ["cli"]
+
 # `vipe-alias` adds a second binary entry named `vipe` alongside `rusty-vipe`.
 # Both binaries share the same source — they differ only in installed name.
 # argv[0] auto-detect (FR-019) routes `vipe` invocations into Strict mode.
+# v0.1.x feature retained verbatim per the v0.2.0 SemVer additive contract.
+# NOT a convention preset bundle — it is an installation-time convenience knob.
 vipe-alias = ["cli"]
+
 # `bench` enables criterion benches in `benches/`. Off by default to keep
-# `cargo install` minimal.
+# `cargo install` minimal. Dev-tooling, not a runtime capability —
+# outside the convention's purview per the vendored feature-lint allowlist.
+# Name + composition preserved verbatim from v0.1.x.
 bench = ["dep:criterion"]
+
 # `dev-helpers` gates the `fake-editor` `[[bin]]` used by integration tests.
 # NOT enabled by `cargo install rusty-vipe`, so the fake-editor helper never
 # ships to end users. Enable with `cargo test --features dev-helpers` (CI does
-# this automatically).
+# this automatically). Dev-tooling outside the convention's purview;
+# name + composition preserved verbatim from v0.1.x.
 dev-helpers = []
 
 [dependencies]
