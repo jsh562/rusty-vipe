@@ -136,6 +136,11 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: ${{ matrix.target }}
+          # The Windows runner fails the cache-save post-step (tar/zstd over
+          # the target dir); build and test themselves pass. Skip saving the
+          # cache on Windows so the post-step can't fail the job. Restore is
+          # unaffected; non-Windows targets still save normally.
+          save-if: ${{ runner.os != 'Windows' }}
       - name: Install cross
         if: matrix.cross
         run: cargo install cross --locked
