@@ -175,7 +175,10 @@ jobs:
           # Edit-in-pipe smoke: pass `hello\n` through rusty-vipe whose
           # editor is the passthrough fake editor; assert downstream gets
           # `hello\n` unchanged.
-          out=$(printf 'hello\n' | EDITOR="$fake_editor --transform=passthrough" rusty-vipe)
+          # RUSTY_VIPE_TEST_BYPASS_TTY: vipe opens /dev/tty to host the editor;
+          # CI has no controlling terminal, so use the documented headless
+          # escape hatch (the integration tests rely on the same var).
+          out=$(printf 'hello\n' | RUSTY_VIPE_TEST_BYPASS_TTY=1 EDITOR="$fake_editor --transform=passthrough" rusty-vipe)
           if [ "$out" != "hello" ]; then
             echo "::error::SC-002 smoke failed — expected 'hello', got '$out'"
             exit 1
@@ -294,7 +297,10 @@ jobs:
           # smoke against the keep-list install.
           cargo build --release --features dev-helpers --bin fake-editor
           fake_editor="$PWD/target/release/fake-editor"
-          out=$(printf 'hello\n' | EDITOR="$fake_editor --transform=passthrough" rusty-vipe)
+          # RUSTY_VIPE_TEST_BYPASS_TTY: vipe opens /dev/tty to host the editor;
+          # CI has no controlling terminal, so use the documented headless
+          # escape hatch (the integration tests rely on the same var).
+          out=$(printf 'hello\n' | RUSTY_VIPE_TEST_BYPASS_TTY=1 EDITOR="$fake_editor --transform=passthrough" rusty-vipe)
           if [ "$out" != "hello" ]; then
             echo "::error::SC-004 keep-list install: unexpected output '$out'"
             exit 1
